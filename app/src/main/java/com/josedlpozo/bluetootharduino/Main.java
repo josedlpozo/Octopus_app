@@ -32,26 +32,19 @@ import java.util.Set;
 
 public class Main extends Activity {
 
-    // Message types sent from the BTkitService Handler
-    public static final int MESSAGE_STATE_CHANGE = 1;
-    public static final int MESSAGE_READ = 2;
-    public static final int MESSAGE_WRITE = 3;
-    public static final int MESSAGE_DEVICE_NAME = 4;
-    public static final int MESSAGE_TOAST = 5;
 
-    // Key names received from the BTkitService Handler
-    public static final String DEVICE_NAME = "device_name";
-    public static final String TOAST = "toast";
 
     private static final String TAG = "MAIN";
     private static final int DISCOVER_DURATION = 300;
     private static final int REQUEST_BLU = 1;
     private ArrayAdapter<String> mArrayAdapter;
+
+    public static String EXTRA_DEVICE_ADDRESS = "device_address";
+
     //private final Handler mHandler;
 
     BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
 
-    private BluetoothClient mBluetooth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +57,10 @@ public class Main extends Activity {
             Toast.makeText(this, "Bluetooth no soportado", Toast.LENGTH_LONG).show();
             buton.setEnabled(false);
         } else {
-            buton.setEnabled(true);
-            enableBluetooth();
+            if(!btAdapter.isEnabled()) {
+                buton.setEnabled(true);
+                enableBluetooth();
+            }
         }
         mArrayAdapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,0);
 
@@ -104,16 +99,20 @@ public class Main extends Activity {
                         address, Toast.LENGTH_LONG)
                         .show();
                 Log.d(TAG, "Address " + address);
-                BluetoothDevice device = btAdapter.getRemoteDevice(address);
-                mBluetooth.connect(device);
+
+                Intent i = new Intent(Main.this, Octopus.class);
+                i.putExtra(EXTRA_DEVICE_ADDRESS, address);
+                startActivity(i);
             }
         });
+
+
 
     }
 
 
     public void enableBluetooth(){
-        Intent discoveryIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        Intent discoveryIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         startActivityForResult(discoveryIntent, REQUEST_BLU);
     }
 
@@ -137,57 +136,4 @@ public class Main extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    /*private class ConnectedThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
-
-        public ConnectedThread(BluetoothSocket socket) {
-            mmSocket = socket;
-            InputStream tmpIn = null;
-            OutputStream tmpOut = null;
-
-            // Get the input and output streams, using temp objects because
-            // member streams are final
-            try {
-                tmpIn = socket.getInputStream();
-                tmpOut = socket.getOutputStream();
-            } catch (IOException e) { }
-
-            mmInStream = tmpIn;
-            mmOutStream = tmpOut;
-        }
-
-        public void run() {
-            byte[] buffer = new byte[1024];  // buffer store for the stream
-            int bytes; // bytes returned from read()
-
-            // Keep listening to the InputStream until an exception occurs
-            while (true) {
-                try {
-                    // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
-                    // Send the obtained bytes to the UI activity
-                    mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
-                            .sendToTarget();
-                } catch (IOException e) {
-                    break;
-                }
-            }
-        }
-
-        /* Call this from the main activity to send data to the remote device */
-        /*public void write(byte[] bytes) {
-            try {
-                mmOutStream.write(bytes);
-            } catch (IOException e) { }
-        }
-
-        /* Call this from the main activity to shutdown the connection */
-        /*public void cancel() {
-            try {
-                mmSocket.close();
-            } catch (IOException e) { }
-        }
-    }*/
 }
