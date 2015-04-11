@@ -27,6 +27,10 @@
             android:name=".DeviceListActivity"
             android:label="@string/title_activity_device_list" >
         </activity>
+        <activity
+            android:name=".Octopus"
+            android:label="@string/title_activity_octopus" >
+        </activity>
     </application>
 
 </manifest>

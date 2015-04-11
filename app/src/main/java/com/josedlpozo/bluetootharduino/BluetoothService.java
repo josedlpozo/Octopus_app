@@ -85,9 +85,9 @@ public class BluetoothService {
                     int endOfLineIndex = recDataString.indexOf("+");
 
                     if(endOfLineIndex>0) {
-                        Log.i(TAG,""+endOfLineIndex);
+                        //Log.i(TAG,""+endOfLineIndex);
                         String dataInPrint = recDataString.substring(0, endOfLineIndex);
-                        Toast.makeText(context, dataInPrint, Toast.LENGTH_LONG).show();
+                        Toast.makeText(context, dataInPrint, Toast.LENGTH_LONG);
                     }
                     break;
             }

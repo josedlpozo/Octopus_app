@@ -2,6 +2,7 @@ package com.josedlpozo.bluetootharduino;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -20,6 +21,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 
@@ -64,18 +66,21 @@ public class DeviceListActivity extends Activity {
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent
                         .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                BluetoothClass bt = device.getBluetoothClass();
+                int clase = bt.getDeviceClass();
                 // If it's already paired, skip it, because it's been listed
                 // already
                 if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
-                    mNewDevicesArrayAdapter.add(device.getName() + "\n"
-                            + device.getAddress());
+                    mPairedDevicesArrayAdapter.add(device.getName() + "\n"
+                            + device.getAddress() +"\n"+
+                            clase);
                 }
                 // When discovery is finished, change the Activity title
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED
                     .equals(action)) {
                 setProgressBarIndeterminateVisibility(false);
                 setTitle("Seleccione dispositivo");
-                if (mNewDevicesArrayAdapter.getCount() == 0) {
+                if (mPairedDevicesArrayAdapter.getCount() == 0) {
                     String noDevices = "No hay dispositivos encontrados.";
                     mNewDevicesArrayAdapter.add(noDevices);
                 }
@@ -120,11 +125,10 @@ public class DeviceListActivity extends Activity {
             }
         });
 
+        ArrayList<BluetoothDevice> item = new ArrayList<BluetoothDevice>();
         // Initialize array adapters. One for already paired devices and
         // one for newly discovered devices
         mPairedDevicesArrayAdapter = new ArrayAdapter<String>(this,
-                R.layout.device_name);
-        mNewDevicesArrayAdapter = new ArrayAdapter<String>(this,
                 R.layout.device_name);
 
         // Find and set up the ListView for paired devices
@@ -132,10 +136,8 @@ public class DeviceListActivity extends Activity {
         pairedListView.setAdapter(mPairedDevicesArrayAdapter);
         pairedListView.setOnItemClickListener(mDeviceClickListener);
 
-        // Find and set up the ListView for newly discovered devices
-        ListView newDevicesListView = (ListView) findViewById(R.id.new_devices);
-        newDevicesListView.setAdapter(mNewDevicesArrayAdapter);
-        newDevicesListView.setOnItemClickListener(mDeviceClickListener);
+
+
 
         // Register for broadcasts when a device is discovered
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -151,17 +153,24 @@ public class DeviceListActivity extends Activity {
         // Get a set of currently paired devices
         Set<BluetoothDevice> pairedDevices = mBtAdapter.getBondedDevices();
 
+        MyAdapter adapter = new MyAdapter(this, pairedDevices);
+        setListAdapter(adapter);
+
         // If there are paired devices, add each one to the ArrayAdapter
         if (pairedDevices.size() > 0) {
             findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
-            for (BluetoothDevice device : pairedDevices) {
+            /*for (BluetoothDevice device : pairedDevices) {
+                BluetoothClass bt = device.getBluetoothClass();
+                int clase = bt.getDeviceClass();
                 mPairedDevicesArrayAdapter.add(device.getName() + "\n"
-                        + device.getAddress());
-            }
+                        + device.getAddress() +"\n"+
+                        clase);
+            */}
+        /*
         } else {
             String noDevices = "No hay dispositivos emparejados.";
             mPairedDevicesArrayAdapter.add(noDevices);
-        }
+        }*/
     }
 
     @Override

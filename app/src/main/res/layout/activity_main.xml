@@ -1,63 +1,39 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    >
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/green_octopus">
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/btnJoinCar"
+        android:background="@drawable/btn_green"
+        style="@style/ButtonText"
+        android:layout_centerInParent="true"
         android:text="Join CarBT"
         />
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/btnJoinSensor"
+        android:background="@drawable/btn_green"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/btnJoinCar"
+        style="@style/ButtonText"
         android:text="Join SensorBT"
         />
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/ON_SENSOR"
-        android:text="ON LED Sensor"
-        />
+        android:id="@+id/comenzar"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/btnJoinCar"
+        android:background="@drawable/btn_green"
+        style="@style/ButtonText"
+        android:text="Comenzar"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/OFF_SENSOR"
-        android:text="OFF LED Sensor"
-        />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/BLINK_SENSOR"
-        android:text="BLINKS LED Sensor"
-        />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/ON_MOTOR"
-        android:text="ON LED Motor"
-        />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/OFF_MOTOR"
-        android:text="OFF LED Motor"
-        />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/BLINK_MOTOR"
-        android:text="BLINKS LED Motor"
-        />
-
-</LinearLayout>
+</RelativeLayout>

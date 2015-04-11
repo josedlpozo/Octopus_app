@@ -46,15 +46,12 @@ public class Main extends Activity {
 
     private Button joinCar;
     private Button joinSensor;
-    private Button ON_Sensor;
-    private Button OFF_Sensor;
-    private Button BLINK_Sensor;
-    private Button ON_Motor;
-    private Button OFF_Motor;
-    private Button BLINK_Motor;
+    private Button comenzar;
 
     private int motorSensor = 0;
 
+    private static final int MOTOR = 0;
+    private static final int SENSOR = 1;
 
 
 
@@ -71,15 +68,8 @@ public class Main extends Activity {
 
         joinCar = (Button) findViewById(R.id.btnJoinCar);
         joinSensor = (Button) findViewById(R.id.btnJoinSensor);
+        comenzar = (Button) findViewById(R.id.comenzar);
 
-        ON_Sensor = (Button) findViewById(R.id.ON_SENSOR);
-        OFF_Sensor = (Button) findViewById(R.id.OFF_SENSOR);
-        BLINK_Sensor = (Button) findViewById(R.id.BLINK_SENSOR);
-        ON_Motor = (Button) findViewById(R.id.ON_MOTOR);
-        OFF_Motor = (Button) findViewById(R.id.OFF_MOTOR);
-        BLINK_Motor = (Button) findViewById(R.id.BLINK_MOTOR);
-
-        setupBotones();
     }
 
     @Override
@@ -92,64 +82,17 @@ public class Main extends Activity {
         } else {
             setupCar();
             setupSensor();
+            setupComenzar();
         }
 
     }
 
-    private void setupBotones(){
-        /*Variables.INSTANCE.ON_Motor.setEnabled(false);
-        Variables.INSTANCE.OFF_Motor.setEnabled(false);
-        Variables.INSTANCE.BLINK_Motor.setEnabled(false);
-
-        Variables.INSTANCE.ON_Sensor.setEnabled(false);
-        Variables.INSTANCE.OFF_Sensor.setEnabled(false);
-        Variables.INSTANCE.BLINK_Sensor.setEnabled(false);*/
-
-        ON_Sensor.setOnClickListener(new View.OnClickListener() {
+    private void setupComenzar(){
+        comenzar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i(TAG,"ON - SENSOR");
-                bqzum.sendData("1",1);
-            }
-        });
-
-        OFF_Sensor.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG,"OFF - SENSOR");
-                bqzum.sendData("0",1);
-            }
-        });
-
-        BLINK_Sensor.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG,"BLINK - SENSOR");
-                bqzum.sendData("2",1);
-            }
-        });
-
-        ON_Motor.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG,"ON - MOTOR");
-                bqzum.sendData("1",0);
-            }
-        });
-
-        OFF_Motor.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG,"OFF - SENSOR");
-                bqzum.sendData("0",0);
-            }
-        });
-
-        BLINK_Motor.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG,"BLINK - SENSOR");
-                bqzum.sendData("2",0);
+                Intent i = new Intent(Main.this,Octopus.class);
+                startActivity(i);
             }
         });
     }
@@ -158,7 +101,7 @@ public class Main extends Activity {
         joinCar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                motorSensor = 0;
+                motorSensor = MOTOR;
                 if (bqzum.getMotorStatus()) {
                     bqzum.disconnectMotor();
                 } else {
@@ -173,7 +116,7 @@ public class Main extends Activity {
         joinSensor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                motorSensor = 1;
+                motorSensor = SENSOR;
                 if (bqzum.getSensorStatus()) {
                     bqzum.disconnectSensor();
                 } else {
@@ -212,7 +155,7 @@ public class Main extends Activity {
                 if (resultCode == Activity.RESULT_OK) {
                     // Get the device MAC address
                     String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
-                    if (motorSensor == 0) {
+                    if (motorSensor == MOTOR) {
                         Variables.INSTANCE.setMotorAddress(address);
                         try {
                             bqzum.connectMotor();

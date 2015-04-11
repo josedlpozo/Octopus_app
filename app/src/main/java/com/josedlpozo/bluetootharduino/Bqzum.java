@@ -23,15 +23,8 @@ public class Bqzum {
     private static final int timeBlock = 150;
     private int intensity = 100;
 
-    // private String cmd1 = "CMD=0,005,050,01," + intensity;
-    private String cmd2 = "CMD=0,002,050,01," + intensity;
-
-    private String cmd3 = "CMD=0,004,050,04," + intensity;
-
-
-    private String shortCmd = "CMD=0,001,015,01,95";
-    private String longCmd = "CMD=0,001,060,01,100";
-    private String silence = "CMD=0,001,025,01,0";
+    private static final int MOTOR = 0;
+    private static final int SENSOR = 1;
 
     public Bqzum() throws Exception {
         mBtServiceMotor = new BluetoothService(Variables.INSTANCE.getAppContext());
@@ -47,8 +40,8 @@ public class Bqzum {
         mBtServiceMotor.connect(motorAddress);
         mBtServiceSensor.connect(sensorAddress);
         // Wait till connected
-        start(1);
-        start(0);
+        start(SENSOR);
+        start(MOTOR);
     }
 
     private void sameMacAddr() throws Exception {
@@ -67,7 +60,7 @@ public class Bqzum {
         String rightAddress = Variables.INSTANCE.getSensorAddress();
         // Attempt to connect to the device
         mBtServiceSensor.connect(rightAddress);
-        start(1);
+        start(SENSOR);
     }
 
     public void connectMotor() throws Exception {
@@ -76,7 +69,7 @@ public class Bqzum {
         String motorAddress = Variables.INSTANCE.getMotorAddress();
         // Attempt to connect to the device
         mBtServiceMotor.connect(motorAddress);
-        start(0);
+        start(MOTOR);
     }
 
     public void start(final int lr) {
@@ -85,11 +78,11 @@ public class Bqzum {
             public void run() {
                 try {
                     switch (lr) {
-                        case 0:
+                        case MOTOR:
                             while (!getMotorStatus())
                                 ;
                             break;
-                        case 1:
+                        case SENSOR:
                             while (!getSensorStatus())
                                 ;
                             break;
@@ -107,8 +100,8 @@ public class Bqzum {
 
     public void disconnect() {
         if (getStatus()) {
-            sendData(endCmd, 0);
-            sendData(endCmd, 1);
+            sendData(endCmd, MOTOR);
+            sendData(endCmd, SENSOR);
         }
         SystemClock.sleep(timeBlock);
         stop();
@@ -122,14 +115,14 @@ public class Bqzum {
     }
 
     public void disconnectMotor() {
-        sendData(endCmd, 0);
+        sendData(endCmd, MOTOR);
         SystemClock.sleep(timeBlock);
         if (mBtServiceMotor != null)
             mBtServiceMotor.stop();
     }
 
     public void disconnectSensor() {
-        sendData(endCmd, 1);
+        sendData(endCmd, SENSOR);
         SystemClock.sleep(timeBlock);
         if (mBtServiceSensor != null)
             mBtServiceSensor.stop();
@@ -138,22 +131,6 @@ public class Bqzum {
     public boolean btEnabled() {
         return mBtServiceMotor.isBluetoothAdapterEnabled()
                 && mBtServiceSensor.isBluetoothAdapterEnabled();
-    }
-
-
-    public void arrived() {
-        //sendData(cmd2, 0);
-        //sendData(cmd2, 1);
-        sendData("CMD=0,001,020,01,100", 1);
-        sendData("CMD=0,001,020,01,100", 0);
-        sendData("CMD=0,001,020,01,100", 1);
-        sendData("CMD=0,001,020,01,100", 0);
-    }
-
-
-    public void errorCase() {
-        sendData(cmd3, 0);
-        sendData(cmd3, 1);
     }
 
 
@@ -171,58 +148,6 @@ public class Bqzum {
     }
 
 
-    public void recalculating() throws Exception {
-        sendData(cmd3, 0);
-        sendData(cmd3, 1);
-    }
-
-
-    public void reset() throws Exception {
-        // sendData(endCmd, 0);
-        // disconnect();
-        // connect();
-        // sendData(startCmd, 0);
-    }
-
-
-    public void startInstruction() {
-        //sendData(cmd2, 0);
-        //sendData(cmd2, 1);
-        sendData("CMD=0,001,020,01,100", 1);
-        sendData("CMD=0,001,020,01,100", 0);
-        sendData("CMD=0,001,020,01,100", 1);
-        sendData("CMD=0,001,020,01,100", 0);
-
-
-    }
-
-
-    public void trafficCercle(int numberExits, int exits) {
-        sendData(cmd3, 0);
-    }
-
-
-    public void turnLeft() {
-        //sendData(cmd2, 0);
-        sendData(shortCmd, 0);
-        sendData(silence, 0);
-        sendData(longCmd, 0);
-    }
-
-
-    public void turnRight() {
-        //sendData(cmd2, 1);
-        sendData(shortCmd, 1);
-        sendData(silence, 1);
-        sendData(longCmd, 1);
-        //SystemClock.sleep(1000);
-    }
-
-
-    public void turnU() {
-        sendData(cmd2, 0);
-    }
-
     /*
      * Sends an instruction.
      *
@@ -230,25 +155,25 @@ public class Bqzum {
      *
      * @param leftRight Left(0) or right(1) sensor.
      */
-    public void sendData(String message, int leftRight) {
-        if (D) Log.d(TAG, "Send message: " + message + " to: " + leftRight);
-        SendThread t = new SendThread(message, leftRight);
+    public void sendData(String message, int motorSensor) {
+        if (D) Log.d(TAG, "Send message: " + message + " to: " + motorSensor);
+        SendThread t = new SendThread(message, motorSensor);
         t.start();
         //SystemClock.sleep(timeBlock); //TODO
     }
 
     class SendThread extends Thread {
         String message;
-        int leftRight;
+        int motorSensor;
 
-        public SendThread(String message, int leftRight) {
+        public SendThread(String message, int motorSensor) {
             this.message = message;
-            this.leftRight = leftRight;
+            this.motorSensor = motorSensor;
         }
 
         @Override
         public void run() {
-            if (leftRight == 0) {
+            if (motorSensor == MOTOR) {
                 // Check that there's actually something to send
                 if (message.length() > 0) {
                     // Get the message bytes and tell the BluetoothService to
