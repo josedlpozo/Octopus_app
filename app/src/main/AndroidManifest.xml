@@ -24,8 +24,8 @@
             android:label="@string/app_name" >
         </activity>
         <activity
-            android:name=".Octopus"
-            android:label="@string/title_activity_octopus" >
+            android:name=".DeviceListActivity"
+            android:label="@string/title_activity_device_list" >
         </activity>
     </application>
 

@@ -35,87 +35,154 @@ public class Main extends Activity {
 
 
     private static final String TAG = "MAIN";
-    private static final int DISCOVER_DURATION = 300;
-    private static final int REQUEST_BLU = 1;
-    private ArrayAdapter<String> mArrayAdapter;
 
-    public static String EXTRA_DEVICE_ADDRESS = "device_address";
 
-    //private final Handler mHandler;
 
-    BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+    // Intent request codes
+    private static final int REQUEST_CONNECT_DEVICE = 1;
+    private static final int REQUEST_ENABLE_BT = 2;
+
+    private Bqzum bqzum;
+
+    private Button joinCar;
+    private Button joinSensor;
+    private Button ON_Sensor;
+    private Button OFF_Sensor;
+    private Button BLINK_Sensor;
+    private Button ON_Motor;
+    private Button OFF_Motor;
+    private Button BLINK_Motor;
+
+    private int motorSensor = 0;
+
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
-        Button buton =(Button) findViewById(R.id.btnSearch);
-        if (btAdapter == null) {
-            Toast.makeText(this, "Bluetooth no soportado", Toast.LENGTH_LONG).show();
-            buton.setEnabled(false);
-        } else {
-            if(!btAdapter.isEnabled()) {
-                buton.setEnabled(true);
-                enableBluetooth();
-            }
+        try {
+            Variables.INSTANCE.init(getApplication());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        mArrayAdapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,0);
+        bqzum = (Bqzum) Variables.INSTANCE.getBqzum();
 
-        ListView lista = (ListView) findViewById(R.id.list);
-        lista.setAdapter(mArrayAdapter);
-        buton.setOnClickListener(new View.OnClickListener() {
+        joinCar = (Button) findViewById(R.id.btnJoinCar);
+        joinSensor = (Button) findViewById(R.id.btnJoinSensor);
+
+        ON_Sensor = (Button) findViewById(R.id.ON_SENSOR);
+        OFF_Sensor = (Button) findViewById(R.id.OFF_SENSOR);
+        BLINK_Sensor = (Button) findViewById(R.id.BLINK_SENSOR);
+        ON_Motor = (Button) findViewById(R.id.ON_MOTOR);
+        OFF_Motor = (Button) findViewById(R.id.OFF_MOTOR);
+        BLINK_Motor = (Button) findViewById(R.id.BLINK_MOTOR);
+
+        setupBotones();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+            Log.e(TAG, "++ ON START ++");
+        if (!bqzum.btEnabled()) {
+            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+        } else {
+            setupCar();
+            setupSensor();
+        }
+
+    }
+
+    private void setupBotones(){
+        /*Variables.INSTANCE.ON_Motor.setEnabled(false);
+        Variables.INSTANCE.OFF_Motor.setEnabled(false);
+        Variables.INSTANCE.BLINK_Motor.setEnabled(false);
+
+        Variables.INSTANCE.ON_Sensor.setEnabled(false);
+        Variables.INSTANCE.OFF_Sensor.setEnabled(false);
+        Variables.INSTANCE.BLINK_Sensor.setEnabled(false);*/
+
+        ON_Sensor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i("SEARCH","Hello");
-                mArrayAdapter.clear();
-                Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
-                // If there are paired devices
-                if (pairedDevices.size() > 0) {
-                    // Loop through paired devices
-                    for (BluetoothDevice device : pairedDevices) {
-                        // Add the name and address to an array adapter to show in a ListView
-                        mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-                    }
+                Log.i(TAG,"ON - SENSOR");
+                bqzum.sendData("1",1);
+            }
+        });
+
+        OFF_Sensor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG,"OFF - SENSOR");
+                bqzum.sendData("0",1);
+            }
+        });
+
+        BLINK_Sensor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG,"BLINK - SENSOR");
+                bqzum.sendData("2",1);
+            }
+        });
+
+        ON_Motor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG,"ON - MOTOR");
+                bqzum.sendData("1",0);
+            }
+        });
+
+        OFF_Motor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG,"OFF - SENSOR");
+                bqzum.sendData("0",0);
+            }
+        });
+
+        BLINK_Motor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG,"BLINK - SENSOR");
+                bqzum.sendData("2",0);
+            }
+        });
+    }
+
+    private void setupCar() {
+        joinCar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                motorSensor = 0;
+                if (bqzum.getMotorStatus()) {
+                    bqzum.disconnectMotor();
+                } else {
+                    Intent serverIntent = new Intent(Main.this, DeviceListActivity.class);
+                    startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
                 }
             }
         });
-        lista.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                Toast.makeText(getApplicationContext(),
-                        "Click ListItem Number " + position, Toast.LENGTH_LONG)
-                        .show();
-                String info = ((TextView) view).getText().toString();
-                Toast.makeText(getApplicationContext(),
-                        info, Toast.LENGTH_LONG)
-                        .show();
-                Log.d(TAG, "TextView_info " + info);
-                String address = info.substring(info.length() - 17);
-                Toast.makeText(getApplicationContext(),
-                        address, Toast.LENGTH_LONG)
-                        .show();
-                Log.d(TAG, "Address " + address);
+    }
 
-                Intent i = new Intent(Main.this, Octopus.class);
-                i.putExtra(EXTRA_DEVICE_ADDRESS, address);
-                startActivity(i);
+    private void setupSensor() {
+        joinSensor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                motorSensor = 1;
+                if (bqzum.getSensorStatus()) {
+                    bqzum.disconnectSensor();
+                } else {
+                    Intent serverIntent = new Intent(Main.this, DeviceListActivity.class);
+                    startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
+                }
             }
         });
-
-
-
     }
-
-
-    public void enableBluetooth(){
-        Intent discoveryIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(discoveryIntent, REQUEST_BLU);
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -135,5 +202,55 @@ public class Main extends Activity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            Log.d(TAG, "onActivityResult " + resultCode);
+        switch (requestCode) {
+            case REQUEST_CONNECT_DEVICE:
+                // When DeviceListActivity returns with a device to connect
+                if (resultCode == Activity.RESULT_OK) {
+                    // Get the device MAC address
+                    String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+                    if (motorSensor == 0) {
+                        Variables.INSTANCE.setMotorAddress(address);
+                        try {
+                            bqzum.connectMotor();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Toast
+                                    .makeText(this, e.getMessage(),
+                                            Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Variables.INSTANCE.setSensorAddress(address);
+                        try {
+                            bqzum.connectSensor();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Toast
+                                    .makeText(this, e.getMessage(),
+                                            Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                }
+                break;
+
+            case REQUEST_ENABLE_BT:
+                if (resultCode == Activity.RESULT_OK) {
+                    setupCar();
+                    setupSensor();
+                } else {
+                    Log.d(TAG, "BT not enabled");
+                    Toast.makeText(this, "BT not enabled",
+                            Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+        }
+    }
+
+
 
 }
